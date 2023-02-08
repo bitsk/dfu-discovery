@@ -19,6 +19,8 @@
 
 #include <iostream>
 #include <string>
+#include <thread>
+#include <atomic>
 
 /*
  * Look for a descriptor in a concatenated descriptor list. Will
@@ -414,7 +416,7 @@ bool getline_async(std::istream& is, std::string& str, char delim = '\n') {
     str = "";
 
     do {
-        charsRead = is.readsome(&inChar, 1);
+        charsRead = is.readsome(&inChar, 255);
         if (charsRead == 1) {
             // if the delimiter is read then return the string so far
             if (inChar == delim) {
@@ -422,12 +424,20 @@ bool getline_async(std::istream& is, std::string& str, char delim = '\n') {
                 lineSoFar = "";
                 lineRead = true;
             } else {  // otherwise add it to the string so far
-                lineSoFar.append(1, inChar);
+                lineSoFar.append(charsRead, inChar);
             }
         }
     } while (charsRead != 0 && !lineRead);
 
     return lineRead;
+}
+
+void print_list() {
+	list_dfu_interfaces();
+}
+
+void print_event() {
+	list_dfu_interfaces();
 }
 
 int main(int argc, char **argv)
@@ -449,8 +459,8 @@ int main(int argc, char **argv)
     }
 
 	// Set STDIN as nonblocking
-	//int flags = fcntl(0, F_GETFL, 0);
-	//fcntl(0, F_SETFL, flags | O_NONBLOCK);
+	// int flags = fcntl(0, F_GETFL, 0);
+	// fcntl(0, F_SETFL, flags | O_NONBLOCK);
 
     printf("{\n\
         \"eventType\": \"hello\",\n\
@@ -458,35 +468,42 @@ int main(int argc, char **argv)
         \"message\": \"OK\"\n\
     }\n");
 
-	bool events = false;
-
     while (1) {
 
 		std::string line;
-		getline_async(std::cin, line);
-
+		bool changed = false;
+		std::getline(std::cin, line);
+		std::atomic<bool> events = false;
 
 		if (line.find("START_SYNC") != std::string::npos) {
-			events = true;
+			std::thread([&]
+    		{
+				while (1) {
+					if (events) {
+						probe_devices(ctx);
+						print_event();
+						std::this_thread::sleep_for(std::chrono::seconds(1));
+					}
+				}
+			}).detach();
 		} else if (line.find("START") != std::string::npos) {
 			ret = libusb_init(&ctx);
 			if (ret) {
-
+				// report error
+			} else {
+				// report ok
 			}
-		} else if (line.find("START") != std::string::npos) {
-			// start listener
+		} else if (line.find("STOP") != std::string::npos) {
+			if (events) {
+				events = false;
+			} else {
+				libusb_exit(ctx);
+			}
 		} else if (line.find("QUIT") != std::string::npos) {
 			exit(0);
 		} else if (line.find("LIST") != std::string::npos) {
 	    	probe_devices(ctx);
 			print_list();
-		}
-		if (events) {
-			probe_devices(ctx);
-			if (changed) {
-				print_event();
-				milli_sleep(1000);
-			}
 		}
     }
 }
