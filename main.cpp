@@ -439,9 +439,7 @@ int main(int argc, char **argv)
 	/* make sure all prints are flushed */
 	setvbuf(stdout, NULL, _IONBF, 0);
 
-	ret = libusb_init(&ctx);
-	if (ret)
-		errx(EX_IOERR, "unable to initialize libusb: %s", libusb_error_name(ret));
+	// See https://arduino.github.io/arduino-cli/0.30/pluggable-discovery-specification/
 
     // wait for HELLO
 	for (std::string line; std::getline(std::cin, line);) {
@@ -471,18 +469,23 @@ int main(int argc, char **argv)
 		if (line.find("START_SYNC") != std::string::npos) {
 			events = true;
 		} else if (line.find("START") != std::string::npos) {
+			ret = libusb_init(&ctx);
+			if (ret) {
+
+			}
+		} else if (line.find("START") != std::string::npos) {
 			// start listener
 		} else if (line.find("QUIT") != std::string::npos) {
 			exit(0);
 		} else if (line.find("LIST") != std::string::npos) {
 	    	probe_devices(ctx);
-	    	list_dfu_interfaces();
-        	milli_sleep(1000);
+			print_list();
 		}
 		if (events) {
 			probe_devices(ctx);
 			if (changed) {
 				print_event();
+				milli_sleep(1000);
 			}
 		}
     }
