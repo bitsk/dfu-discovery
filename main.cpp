@@ -503,7 +503,7 @@ int main(int argc, char **argv) {
 
   std::cout << j.dump(2) << std::endl;
 
-  std::atomic<int> state = IDLE;
+  std::atomic<int> state = { IDLE };
 
   while (1) {
 
