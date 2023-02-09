@@ -402,6 +402,21 @@ json list_dfu_interfaces(void) {
   int index = 0;
 
   for (pdfu = dfu_root; pdfu != NULL; pdfu = pdfu->next) {
+
+	if (!(pdfu->flags & DFU_IFF_DFU)) {
+		// decide what to do with DFU runtime objects
+		// for the time being, ignore them
+		continue;
+	}
+
+	for (int i = 0; i < index; i++) {
+		// allow only one object
+		if (j["ports"][i]["address"] == get_path(pdfu->dev)) {
+			index = i;
+			break;
+		}
+	}
+
     j["ports"][index]["address"] = get_path(pdfu->dev);
     j["ports"][index]["label"] = pdfu->alt_name;
     j["ports"][index]["protocol"] = "dfu";
@@ -459,12 +474,48 @@ void print_list() {
   std::cout << j.dump(2) << std::endl;
 }
 
+
+
+
 json previous_list;
 void print_event() {
   auto j = list_dfu_interfaces();
   auto diff = json::diff(previous_list, j);
+
+  json diff_discovery;
+  //diff_discovery["eventType"] = "remove";
+
   if (diff.size() > 0) {
-    std::cout << diff.dump(2) << std::endl;
+    for (auto& new_port : j["ports"].items()) {
+      bool found = false;
+      for (auto& old_port : previous_list["ports"].items()) {
+        if (new_port.value()["address"] == old_port.value()["address"]) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        diff_discovery["eventType"] = "add";
+        diff_discovery["port"] = new_port.value();
+        std::cout << diff_discovery.dump(2) << std::endl;
+      }
+    }
+
+    for (auto& new_port : previous_list["ports"].items()) {
+      bool found = false;
+      for (auto& old_port : j["ports"].items()) {
+        if (new_port.value()["address"] == old_port.value()["address"]) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        diff_discovery["eventType"] = "remove";
+        diff_discovery["port"] = new_port.value();
+        std::cout << diff_discovery.dump(2) << std::endl;
+      }
+    }
+    //std::cout << diff.dump(2) << std::endl;
   }
   previous_list = j;
 }
