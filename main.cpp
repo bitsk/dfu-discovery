@@ -175,7 +175,7 @@ static void probe_configuration(libusb_device *dev,
        * all devices for non-standard types
        */
       if (libusb_open(dev, &devh) == 0) {
-        ret = libusb_get_descriptor(devh, USB_DT_DFU, 0, (void *)&func_dfu,
+        ret = libusb_get_descriptor(devh, USB_DT_DFU, 0, (unsigned char *)&func_dfu,
                                     sizeof(func_dfu));
         libusb_close(devh);
         if (ret > -1)
@@ -265,14 +265,14 @@ static void probe_configuration(libusb_device *dev,
         }
         if (intf->iInterface != 0)
           ret = get_string_descriptor_ascii(devh, intf->iInterface,
-                                            (void *)alt_name, MAX_DESC_STR_LEN);
+                                            (unsigned char *)alt_name, MAX_DESC_STR_LEN);
         else
           ret = -1;
         if (ret < 1)
           strcpy(alt_name, "UNKNOWN");
         if (desc->iSerialNumber != 0)
           ret = get_string_descriptor_ascii(
-              devh, desc->iSerialNumber, (void *)serial_name, MAX_DESC_STR_LEN);
+              devh, desc->iSerialNumber, (unsigned char *)serial_name, MAX_DESC_STR_LEN);
         else
           ret = -1;
         if (ret < 1)
@@ -291,7 +291,7 @@ static void probe_configuration(libusb_device *dev,
             continue;
         }
 
-        pdfu = malloc(sizeof(*pdfu));
+        pdfu = (dfu_if *)malloc(sizeof(*pdfu));
 
         memset(pdfu, 0, sizeof(*pdfu));
 
@@ -340,9 +340,9 @@ char *get_path(libusb_device *dev) {
   int r, j;
   r = libusb_get_port_numbers(dev, path, sizeof(path));
   if (r > 0) {
-    sprintf(path_buf, "%d-%d", libusb_get_bus_number(dev), path[0]);
+    snprintf(path_buf, MAX_PATH_LEN, "%d-%d", libusb_get_bus_number(dev), path[0]);
     for (j = 1; j < r; j++) {
-      sprintf(path_buf + strlen(path_buf), ".%d", path[j]);
+      snprintf(path_buf + strlen(path_buf), MAX_PATH_LEN, ".%d", path[j]);
     };
   }
   return path_buf;
@@ -354,6 +354,7 @@ char *get_path(libusb_device *dev) {
 }
 
 void probe_devices(libusb_context *ctx) {
+  dfu_root = NULL;
   libusb_device **list;
   ssize_t num_devs;
   ssize_t i;
@@ -386,7 +387,7 @@ using namespace std;
 
 std::string print_hex(int number) {
   char tmp[10];
-  sprintf(tmp, "0x%04x", number);
+  snprintf(tmp, 10, "0x%04x", number);
   std::string s(tmp);
   return s;
 }
@@ -461,8 +462,8 @@ void print_list() {
 json previous_list;
 void print_event() {
   auto j = list_dfu_interfaces();
-  if (j.size() != previous_list.size()) {
-    auto diff = json::diff(j, previous_list);
+  auto diff = json::diff(previous_list, j);
+  if (diff.size() > 0) {
     std::cout << diff.dump(2) << std::endl;
   }
   previous_list = j;
@@ -477,6 +478,9 @@ int main(int argc, char **argv) {
 
   /* make sure all prints are flushed */
   setvbuf(stdout, NULL, _IONBF, 0);
+
+  /* Mute stderr */
+  //freopen("/dev/null", "w", stderr);
 
   // See
   // https://arduino.github.io/arduino-cli/0.30/pluggable-discovery-specification/
