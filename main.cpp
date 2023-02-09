@@ -385,13 +385,40 @@ void print_dfu_if(struct dfu_if *dfu_if)
 	       dfu_if->serial_name);
 }
 
+using json = nlohmann::json;
+using namespace std;
+
+std::string print_hex(int number) {
+	char tmp[10];
+	sprintf(tmp, "0x%04x", number);
+	std::string s(tmp);
+	return s;
+}
+
 /* Walk the device tree and print out DFU devices */
-void list_dfu_interfaces(void)
+json list_dfu_interfaces(void)
 {
 	struct dfu_if *pdfu;
 
-	for (pdfu = dfu_root; pdfu != NULL; pdfu = pdfu->next)
-		print_dfu_if(pdfu);
+	json j;
+	j["event"] = "list";
+
+	int index = 0;
+
+	for (pdfu = dfu_root; pdfu != NULL; pdfu = pdfu->next) {
+		j["ports"][index]["address"] = get_path(pdfu->dev);
+		j["ports"][index]["label"] = pdfu->alt_name;
+		j["ports"][index]["protocol"] = "dfu";
+		j["ports"][index]["protocolLabel"] = pdfu->flags & DFU_IFF_DFU ? "DFU" : "Runtime";
+		j["ports"][index]["properties"] = {
+			{"vid",  print_hex(pdfu->vendor)},
+			{"pid",  print_hex(pdfu->product)},
+			{"serialNumber", pdfu->serial_name},
+			{"name", pdfu->alt_name}
+		};
+		index++;
+	}
+	return j;
 }
 
 struct dfu_if *dfu_root = NULL;
@@ -433,12 +460,27 @@ bool getline_async(std::istream& is, std::string& str, char delim = '\n') {
 }
 
 void print_list() {
-	list_dfu_interfaces();
+	auto j = list_dfu_interfaces();
+	std::cout << j.dump(2) << std::endl;
 }
 
+json previous_list;
 void print_event() {
-	list_dfu_interfaces();
+	auto j = list_dfu_interfaces();
+	if (j.size()!= previous_list.size()) {
+		auto diff = json::diff(j, previous_list);
+		std::cout << diff.dump(2) << std::endl;
+	}
+	previous_list = j;
 }
+
+enum states {
+	IDLE,
+	START,
+	START_SYNC,
+	STOP,
+	QUIT
+};
 
 int main(int argc, char **argv)
 {
@@ -461,45 +503,69 @@ int main(int argc, char **argv)
 	// Set STDIN as nonblocking
 	// int flags = fcntl(0, F_GETFL, 0);
 	// fcntl(0, F_SETFL, flags | O_NONBLOCK);
+	json j;
 
-    printf("{\n\
-        \"eventType\": \"hello\",\n\
-        \"protocolVersion\": 1,\n\
-        \"message\": \"OK\"\n\
-    }\n");
+	j["eventType"] = "hello";
+	j["protocolVersion"] = 1;
+	j["message"] = "OK";
+
+    std::cout << j.dump(2) << std::endl;
+
+	std::atomic<int> state = IDLE;
 
     while (1) {
 
 		std::string line;
-		bool changed = false;
 		std::getline(std::cin, line);
-		std::atomic<bool> events = false;
 
 		if (line.find("START_SYNC") != std::string::npos) {
-			std::thread([&]
-    		{
-				while (1) {
-					if (events) {
-						probe_devices(ctx);
-						print_event();
-						std::this_thread::sleep_for(std::chrono::seconds(1));
-					}
+			if (state == IDLE) {
+				ret = libusb_init(&ctx);
+				j["eventType"] = "start_sync";
+				if (ret != 0) {
+					j["message"] = "Permission error";
+					j["error"] = true;
+					std::cout << j.dump(2) << std::endl;
+					continue;
 				}
-			}).detach();
-		} else if (line.find("START") != std::string::npos) {
-			ret = libusb_init(&ctx);
-			if (ret) {
-				// report error
-			} else {
-				// report ok
+				std::thread([&]
+				{
+					j["message"] = "OK";
+					std::cout << j.dump(2) << std::endl;
+					while (1) {
+						if (state == START_SYNC) {
+							probe_devices(ctx);
+							print_event();
+						}
+						std::this_thread::sleep_for(std::chrono::seconds(5));
+					}
+				}).detach();
 			}
-		} else if (line.find("STOP") != std::string::npos) {
-			if (events) {
-				events = false;
+			state = START_SYNC;
+		} else if (line.find("START") != std::string::npos) {
+			state = START;
+			j["eventType"] = "start";
+			ret = libusb_init(&ctx);
+			if (ret == 0) {
+				j["message"] = "OK";
 			} else {
+				j["error"] = true;
+				j["message"] = "Permission error";
+			}
+			std::cout << j.dump(2) << std::endl;
+		} else if (line.find("STOP") != std::string::npos) {
+			j["eventType"] = "stop";
+			j["message"] = "OK";
+			std::cout << j.dump(2) << std::endl;
+			if (state != START_SYNC) {
 				libusb_exit(ctx);
 			}
+			state = STOP;
 		} else if (line.find("QUIT") != std::string::npos) {
+			state = QUIT;
+			j["eventType"] = "quit";
+			j["message"] = "OK";
+			std::cout << j.dump(2) << std::endl;
 			exit(0);
 		} else if (line.find("LIST") != std::string::npos) {
 	    	probe_devices(ctx);

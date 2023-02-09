@@ -30,6 +30,5 @@ extern const char *match_serial_dfu;
 void probe_devices(libusb_context *);
 void disconnect_devices(void);
 void print_dfu_if(struct dfu_if *);
-void list_dfu_interfaces(void);
 
 #endif /* DFU_UTIL_H */
