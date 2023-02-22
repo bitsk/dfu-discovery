@@ -574,7 +574,7 @@ int main(int argc, char **argv) {
         std::thread([&] {
           j["message"] = "OK";
           std::cout << j.dump(2) << std::endl;
-          while (1) {
+          while (state != QUIT) {
             if (state == START_SYNC) {
               probe_devices(ctx);
               print_event();
