@@ -193,13 +193,20 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
 
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_osx_darwin_amd64"
+      BUILD_LIBUSB: >
+        curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
+        cd libusb-1.0.26/ &&
+        ./configure --with-pic --disable-udev --enable-static --disable-shared --host=x86_64-apple-darwin20.4 &&
+        make -j"$(nproc)" &&
+        make install &&
+        cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
       BUILD_PLATFORM: "darwin/amd64"
       # We are experiencing the following error with macOS_64bit build:
