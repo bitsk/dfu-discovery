@@ -1,4 +1,5 @@
 compile.sh
+libusb-*
 dfu-util-*/*
 dfu-discovery
 *.o
