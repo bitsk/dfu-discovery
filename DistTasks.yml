@@ -32,13 +32,20 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         zip {{.PACKAGE_NAME}} {{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.PLATFORM_DIR}}/LICENSE.txt
 
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_windows_386"
+      BUILD_LIBUSB: >
+        curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
+        cd libusb-1.0.26/ &&
+        ./configure --with-pic --disable-udev --enable-static --disable-shared --host=i686-w64-mingw32 &&
+        make -j"$(nproc)" &&
+        make install &&
+        cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.LDFLAGS}}"
       BUILD_PLATFORM: "windows/386"
       CONTAINER_TAG: "{{.GO_VERSION}}-main"
