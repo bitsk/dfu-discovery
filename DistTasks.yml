@@ -248,6 +248,7 @@ tasks:
         cp ../LICENSE.txt {{.PLATFORM_DIR}}/
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
+        -e OSXCROSS_NO_INCLUDE_PATH_WARNINGS=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
         --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
@@ -292,6 +293,7 @@ tasks:
         cp ../LICENSE.txt {{.PLATFORM_DIR}}/
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
+        -e OSXCROSS_NO_INCLUDE_PATH_WARNINGS=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
         --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
