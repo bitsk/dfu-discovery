@@ -45,6 +45,7 @@ tasks:
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host=i686-w64-mingw32 &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.LDFLAGS}}"
       BUILD_PLATFORM: "windows/386"
@@ -75,6 +76,7 @@ tasks:
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host=x86_64-w64-mingw32 &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.LDFLAGS}}"
       BUILD_PLATFORM: "windows/amd64"
@@ -105,6 +107,7 @@ tasks:
         CFLAGS=-m32 CXXFLAGS=-m32 ./configure --with-pic --disable-udev --enable-static --disable-shared --host=i386-linux-gnu &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
       BUILD_PLATFORM: "linux/386"
@@ -135,6 +138,7 @@ tasks:
         ./configure --with-pic --disable-udev --enable-static --disable-shared &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
       BUILD_PLATFORM: "linux/amd64"
@@ -165,6 +169,7 @@ tasks:
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host=arm-linux-gnueabihf &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
       BUILD_PLATFORM: "linux/armv7"
@@ -195,6 +200,7 @@ tasks:
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host=arm-linux-gnueabi &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
       BUILD_PLATFORM: "linux/armv6"
@@ -225,6 +231,7 @@ tasks:
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host=aarch64-linux-gnu &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
       BUILD_PLATFORM: "linux/arm64"
@@ -255,6 +262,7 @@ tasks:
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host=x86_64-apple-darwin20.4 &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
       BUILD_PLATFORM: "darwin/amd64"
@@ -298,6 +306,7 @@ tasks:
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host=aarch64-apple-darwin20.4 &&
         make -j"$(nproc)" &&
         make install &&
+        make distclean &&
         cd .. &&
       BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
       BUILD_PLATFORM: "darwin/arm64"
