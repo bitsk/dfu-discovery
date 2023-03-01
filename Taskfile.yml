@@ -26,4 +26,23 @@ vars:
     -X {{.CONFIGURATION_PACKAGE}}.Commit={{.COMMIT}}
     -X {{.CONFIGURATION_PACKAGE}}.Timestamp={{.TIMESTAMP}}
     '
-tasks: {}
+  DFU_UTIL_VERSION: dfu-util-0.11
+
+tasks:
+  download-dfu-util:
+    desc: download dfu-util and copy the files in the correct dir
+    cmds:
+      - |
+        if [ -d "{{.DFU_UTIL_VERSION}}" ];
+          then
+            echo "{{.DFU_UTIL_VERSION}} already downloaded (directory exists)."
+          else
+            echo "Downloading {{.DFU_UTIL_VERSION}}..."
+            curl https://dfu-util.sourceforge.net/releases/{{.DFU_UTIL_VERSION}}.tar.gz -s | tar xz
+
+            cp {{.DFU_UTIL_VERSION}}/src/dfuse_mem.c dfu-util_dfuse_mem.c
+            cp {{.DFU_UTIL_VERSION}}/src/dfu_util.c dfu-util_dfu_util.c
+            cp {{.DFU_UTIL_VERSION}}/src/quirks.c dfu-util_quirks.c
+            # for some reason quirks.c has the exec flag set
+            chmod -x dfu-util_quirks.c
+        fi
