@@ -18,8 +18,8 @@
 package main
 
 /*
-#cgo CPPFLAGS: -DHAVE_UNISTD_H -DHAVE_NANOSLEEP -DHAVE_ERR -I. -Idfu-util-0.11/src -I/usr/local/include/libusb-1.0
-#cgo CFLAGS: -DHAVE_UNISTD_H -DHAVE_NANOSLEEP -DHAVE_ERR -I. -Idfu-util-0.11/src -I/usr/local/include/libusb-1.0
+#cgo CPPFLAGS: -DHAVE_UNISTD_H -DHAVE_NANOSLEEP -DHAVE_ERR -I. -Idfu-util-0.11/src -I/usr/local/include/libusb-1.0 -Wall
+#cgo CFLAGS: -DHAVE_UNISTD_H -DHAVE_NANOSLEEP -DHAVE_ERR -I. -Idfu-util-0.11/src -I/usr/local/include/libusb-1.0 -Wall
 #cgo darwin LDFLAGS: -L/usr/local/lib -lusb-1.0 -framework IOKit -framework CoreFoundation -framework Security
 #cgo !darwin LDFLAGS: -L/usr/local/lib -lusb-1.0
 
@@ -32,13 +32,16 @@ char *get_path(libusb_device *dev);
 const char *libusbOpen();
 void libusbClose();
 void dfuProbeDevices();
+const char *libusbHotplugRegisterCallback();
+void libusbHotplugDeregisterCallback();
+int libusbHandleEvents();
 */
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/arduino/go-properties-orderedmap"
 	discovery "github.com/arduino/pluggable-discovery-protocol-handler/v2"
@@ -84,16 +87,24 @@ func (d *DFUDiscovery) StartSync(eventCB discovery.EventCallback, errorCB discov
 	if cErr := C.libusbOpen(); cErr != nil {
 		return fmt.Errorf("can't open libusb: %s", C.GoString(cErr))
 	}
+	if err := C.libusbHotplugRegisterCallback(); err != nil {
+		return errors.New(C.GoString(err))
+	}
+
 	closeChan := make(chan struct{})
 	go func() {
 		d.portsCache = map[string]*discovery.Port{}
+		d.sendUpdates(eventCB, errorCB)
 		for {
-			d.sendUpdates(eventCB, errorCB)
+			if C.libusbHandleEvents() != 0 {
+				d.sendUpdates(eventCB, errorCB)
+			}
 			select {
-			case <-time.After(5 * time.Second):
 			case <-closeChan:
+				C.libusbHotplugDeregisterCallback()
 				d.portsCache = nil
 				return
+			default:
 			}
 		}
 	}()

@@ -79,3 +79,44 @@ void dfuProbeDevices() {
   clearDfuRoot();
   probe_devices(ctx);
 }
+
+volatile int has_event = 0;
+
+int libusbHandleEvents() {
+  struct timeval tv;
+  tv.tv_sec = 0;
+  tv.tv_usec = 500000;
+  libusb_handle_events_timeout_completed(ctx, &tv, NULL);
+  int res = has_event;
+  has_event = 0;
+  return res;
+}
+
+int callback(libusb_context *ctx, libusb_device *device, libusb_hotplug_event event, void *user_data) {
+  has_event = 1;
+  return 0;
+}
+
+libusb_hotplug_callback_handle callbackHandle;
+
+const char *libusbHotplugRegisterCallback() {
+  int err = libusb_hotplug_register_callback(
+    ctx,
+    LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED | LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT,
+    LIBUSB_HOTPLUG_NO_FLAGS,
+    LIBUSB_HOTPLUG_MATCH_ANY, // Vendor ID
+    LIBUSB_HOTPLUG_MATCH_ANY, // Product ID
+    LIBUSB_HOTPLUG_MATCH_ANY, // Device Class
+    callback,                 // Actual callback function
+    NULL,                     // User data
+    &callbackHandle
+  );
+  if (err != 0) {
+    return libusb_strerror(err);
+  }
+  return NULL;
+}
+
+void libusbHotplugDeregisterCallback() {
+  libusb_hotplug_deregister_callback(ctx, callbackHandle);
+}
