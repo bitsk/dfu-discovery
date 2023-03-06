@@ -74,9 +74,9 @@ func (d *DFUDiscovery) Quit() {
 
 // Stop is the handler for the pluggable-discovery STOP command
 func (d *DFUDiscovery) Stop() error {
-	if d.closeChan != nil {
-		close(d.closeChan)
-		d.closeChan = nil
+	if d.close != nil {
+		d.close()
+		d.close = nil
 	}
 	C.libusbClose()
 	return nil
@@ -84,16 +84,20 @@ func (d *DFUDiscovery) Stop() error {
 
 // StartSync is the handler for the pluggable-discovery START_SYNC command
 func (d *DFUDiscovery) StartSync(eventCB discovery.EventCallback, errorCB discovery.ErrorCallback) error {
+	d.portsCache = map[string]*discovery.Port{}
 	if cErr := C.libusbOpen(); cErr != nil {
 		return fmt.Errorf("can't open libusb: %s", C.GoString(cErr))
 	}
+	return d.sync(eventCB, errorCB)
+}
+
+func (d *DFUDiscovery) libusbSync(eventCB discovery.EventCallback, errorCB discovery.ErrorCallback) error {
 	if err := C.libusbHotplugRegisterCallback(); err != nil {
 		return errors.New(C.GoString(err))
 	}
 
 	closeChan := make(chan struct{})
 	go func() {
-		d.portsCache = map[string]*discovery.Port{}
 		d.sendUpdates(eventCB, errorCB)
 		for {
 			if C.libusbHandleEvents() != 0 {
@@ -102,7 +106,6 @@ func (d *DFUDiscovery) StartSync(eventCB discovery.EventCallback, errorCB discov
 			select {
 			case <-closeChan:
 				C.libusbHotplugDeregisterCallback()
-				d.portsCache = nil
 				return
 			default:
 			}
