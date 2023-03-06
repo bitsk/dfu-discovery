@@ -1,5 +1,6 @@
 # Arduino pluggable discovery for dfu devices
 [![Sync Labels status](https://github.com/arduino/dfu-discovery/actions/workflows/sync-labels.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/sync-labels.yml)
+[![Check Go Dependencies status](https://github.com/arduino/dfu-discovery/actions/workflows/check-go-dependencies-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-go-dependencies-task.yml)
 
 The `dfu-discovery` tool is a command line program that interacts via stdio. It accepts commands as plain ASCII strings terminated with LF `\n` and sends response as JSON.
 
