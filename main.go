@@ -58,7 +58,7 @@ func main() {
 
 // DFUDiscovery is the implementation of the DFU pluggable-discovery
 type DFUDiscovery struct {
-	closeChan  chan<- struct{}
+	close      func()
 	portsCache map[string]*discovery.Port
 }
 
@@ -108,7 +108,9 @@ func (d *DFUDiscovery) StartSync(eventCB discovery.EventCallback, errorCB discov
 			}
 		}
 	}()
-	d.closeChan = closeChan
+	d.close = func() {
+		close(closeChan)
+	}
 	return nil
 }
 
