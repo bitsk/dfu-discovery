@@ -19,9 +19,10 @@
 package main
 
 /*
-#cgo CPPFLAGS: -DHAVE_UNISTD_H -DHAVE_NANOSLEEP -DHAVE_ERR -I. -Idfu-util-0.11/src -I/usr/include/libusb-1.0
-#cgo CFLAGS: -DHAVE_UNISTD_H -DHAVE_NANOSLEEP -DHAVE_ERR -I. -Idfu-util-0.11/src -I/usr/include/libusb-1.0
-#cgo LDFLAGS: -lusb-1.0
+#cgo CPPFLAGS: -DHAVE_UNISTD_H -DHAVE_NANOSLEEP -DHAVE_ERR -I. -Idfu-util-0.11/src -I/usr/local/include/libusb-1.0
+#cgo CFLAGS: -DHAVE_UNISTD_H -DHAVE_NANOSLEEP -DHAVE_ERR -I. -Idfu-util-0.11/src -I/usr/local/include/libusb-1.0
+#cgo darwin LDFLAGS: -L/usr/local/lib -lusb-1.0 -framework IOKit -framework CoreFoundation -framework Security
+#cgo !darwin LDFLAGS: -L/usr/local/lib -lusb-1.0
 
 #include <dfu.h>
 #include <dfu_util.h>

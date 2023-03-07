@@ -1,10 +1,24 @@
-# Arduino pluggable discovery for serial ports
+# Arduino pluggable discovery for dfu devices
 
 The `dfu-discovery` tool is a command line program that interacts via stdio. It accepts commands as plain ASCII strings terminated with LF `\n` and sends response as JSON.
 
-## How to build
+## How to build:
 
-Install a recent golang environment and run `go build`. The executable `dfu-discovery` will be produced in your working directory.
+[Docker](https://www.docker.com/) is required to build this project, along with [task](https://taskfile.dev/).
+
+Just run `task download-dfu-util` to download dfu-util source code and then `task dist:<platform-to-build>`
+The platform to build can be one of:
+- Windows_32bit
+- Windows_64bit
+- Linux_32bit
+- Linux_64bit
+- Linux_ARMv6
+- Linux_ARMv7
+- Linux_ARM64
+- macOS_64bit
+- macOS_ARM64
+
+The executable `dfu-discovery` will be produced inside `dist/dfu-discovery-<platform>/dfu-discovery`.
 
 ## Usage
 
@@ -75,7 +89,7 @@ after this output the tool quits.
 
 #### LIST command
 
-The `LIST` command returns a list of the currently available serial ports. The format of the response is the following:
+The `LIST` command returns a list of the currently available dfu ports. The format of the response is the following:
 
 ```json
 {
@@ -258,7 +272,7 @@ $
 ## Security
 
 If you think you found a vulnerability or other security-related bug in this project, please read our
-[security policy](https://github.com/arduino/serial-discovery/security/policy) and report the bug to our Security Team 🛡️
+[security policy](https://github.com/arduino/dfu-discovery/security/policy) and report the bug to our Security Team 🛡️
 Thank you!
 
 e-mail contact: security@arduino.cc
@@ -268,7 +282,7 @@ e-mail contact: security@arduino.cc
 Copyright (c) 2018 ARDUINO SA (www.arduino.cc)
 
 The software is released under the GNU General Public License, which covers the main body
-of the serial-discovery code. The terms of this license can be found at:
-https://www.gnu.org/licenses/gpl-3.0.en.html
+of the dfu-discovery code. The terms of this license can be found at:
+https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
-See [LICENSE.txt](https://github.com/arduino/serial-discovery/blob/master/LICENSE.txt) for details.
+See [LICENSE.txt](https://github.com/arduino/dfu-discovery/blob/master/LICENSE.txt) for details.
