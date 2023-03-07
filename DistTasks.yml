@@ -32,7 +32,7 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         zip {{.PACKAGE_NAME}} {{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.PLATFORM_DIR}}/LICENSE.txt
@@ -40,7 +40,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_windows_386"
       HOST: "i686-w64-mingw32"
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
@@ -48,7 +48,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.LDFLAGS}}
       BUILD_PLATFORM: "windows/386"
       CONTAINER_TAG: "{{.GO_VERSION}}-main"
       PACKAGE_PLATFORM: "Windows_32bit"
@@ -64,7 +64,7 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         zip {{.PACKAGE_NAME}} {{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.PLATFORM_DIR}}/LICENSE.txt
@@ -80,7 +80,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}}.exe {{.LDFLAGS}}
       BUILD_PLATFORM: "windows/amd64"
       CONTAINER_TAG: "{{.GO_VERSION}}-main"
       PACKAGE_PLATFORM: "Windows_64bit"
@@ -96,7 +96,7 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
@@ -112,7 +112,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}
       BUILD_PLATFORM: "linux/386"
       CONTAINER_TAG: "{{.GO_VERSION}}-main"
       PACKAGE_PLATFORM: "Linux_32bit"
@@ -128,7 +128,7 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
@@ -144,7 +144,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}
       BUILD_PLATFORM: "linux/amd64"
       CONTAINER_TAG: "{{.GO_VERSION}}-main"
       PACKAGE_PLATFORM: "Linux_64bit"
@@ -160,7 +160,7 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
@@ -176,7 +176,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}
       BUILD_PLATFORM: "linux/armv7"
       CONTAINER_TAG: "{{.GO_VERSION}}-armhf"
       PACKAGE_PLATFORM: "Linux_ARMv7"
@@ -192,7 +192,7 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
@@ -208,7 +208,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}
       BUILD_PLATFORM: "linux/armv6"
       CONTAINER_TAG: "{{.GO_VERSION}}-armel-debian9"
       PACKAGE_PLATFORM: "Linux_ARMv6"
@@ -224,7 +224,7 @@ tasks:
         docker run -v `pwd`/..:/home/build -w /home/build \
         -e CGO_ENABLED=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
@@ -240,7 +240,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}
       BUILD_PLATFORM: "linux/arm64"
       CONTAINER_TAG: "{{.GO_VERSION}}-arm"
       PACKAGE_PLATFORM: "Linux_ARM64"
@@ -257,7 +257,7 @@ tasks:
         -e CGO_ENABLED=1 \
         -e OSXCROSS_NO_INCLUDE_PATH_WARNINGS=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
@@ -273,7 +273,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}
       BUILD_PLATFORM: "darwin/amd64"
       # We are experiencing the following error with macOS_64bit build:
       #
@@ -303,7 +303,7 @@ tasks:
         -e CGO_ENABLED=1 \
         -e OSXCROSS_NO_INCLUDE_PATH_WARNINGS=1 \
         {{.CONTAINER}}:{{.CONTAINER_TAG}} \
-        --build-cmd "{{.BUILD_LIBUSB}}{{.BUILD_COMMAND}}" \
+        --build-cmd "{{.BUILD_COMMAND}}" \
         -p "{{.BUILD_PLATFORM}}"
 
         tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
@@ -319,7 +319,7 @@ tasks:
         make install &&
         make distclean &&
         cd .. &&
-      BUILD_COMMAND: "go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}"
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}
       BUILD_PLATFORM: "darwin/arm64"
       CONTAINER_TAG: "{{.GO_VERSION}}-darwin-arm64-debian10"
       PACKAGE_PLATFORM: "macOS_ARM64"
