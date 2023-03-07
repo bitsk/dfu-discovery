@@ -6,3 +6,4 @@ dfu-discovery
 dfu-util_*.c
 dist/
 libusb.h
+/node_modules/

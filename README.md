@@ -4,6 +4,7 @@
 [![Check License status](https://github.com/arduino/dfu-discovery/actions/workflows/check-license.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-license.yml)
 [![Check Go status](https://github.com/arduino/dfu-discovery/actions/workflows/check-go-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-go-task.yml)
 [![Publish Tester Build status](https://github.com/arduino/dfu-discover/actions/workflows/publish-go-tester-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/publish-go-tester-task.yml)
+[![Check Taskfiles status](https://github.com/arduino/dfu-discovery/actions/workflows/check-taskfiles.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-taskfiles.yml)
 
 The `dfu-discovery` tool is a command line program that interacts via stdio. It accepts commands as plain ASCII strings terminated with LF `\n` and sends response as JSON.
 
