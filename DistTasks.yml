@@ -72,7 +72,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_windows_amd64"
       HOST: "x86_64-w64-mingw32"
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
@@ -104,7 +104,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_linux_amd32"
       HOST: "i386-linux-gnu"
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         CFLAGS=-m32 CXXFLAGS=-m32 ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
@@ -136,7 +136,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_linux_amd64"
       HOST: ""
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
@@ -168,7 +168,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_linux_arm_7"
       HOST: "arm-linux-gnueabihf"
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
@@ -200,7 +200,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_linux_arm_6"
       HOST: "arm-linux-gnueabi"
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
@@ -232,7 +232,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_linux_arm_64"
       HOST: "aarch64-linux-gnu"
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
@@ -265,7 +265,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_osx_darwin_amd64"
       HOST: "x86_64-apple-darwin20.4"
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
@@ -311,7 +311,7 @@ tasks:
     vars:
       PLATFORM_DIR: "{{.PROJECT_NAME}}_osx_darwin_arm64"
       HOST: "aarch64-apple-darwin20.4"
-      BUILD_LIBUSB: >
+      BUILD_COMMAND: >
         curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
         cd libusb-1.0.26/ &&
         ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
