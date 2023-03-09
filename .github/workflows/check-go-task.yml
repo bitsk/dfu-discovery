@@ -80,6 +80,11 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: 3.x
 
+      - name: Download external files
+        run: |
+          task download-dfu-util
+          task download-libusb
+
       - name: Check for errors
         env:
           GO_MODULE_PATH: ${{ matrix.module.path }}
