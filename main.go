@@ -154,8 +154,8 @@ type DFUInterface struct {
 // AsDiscoveryPort converts this DFUInterface into a discovery.Port
 func (i *DFUInterface) AsDiscoveryPort() *discovery.Port {
 	props := properties.NewMap()
-	props.Set("vid", fmt.Sprintf("%04X", i.VID))
-	props.Set("pid", fmt.Sprintf("%04X", i.PID))
+	props.Set("vid", fmt.Sprintf("0x%04X", i.VID))
+	props.Set("pid", fmt.Sprintf("0x%04X", i.PID))
 	if i.SerialNumber != "" {
 		props.Set("serial", i.SerialNumber)
 	}
