@@ -39,9 +39,11 @@ int libusbHandleEvents();
 import "C"
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/arduino/go-properties-orderedmap"
 	discovery "github.com/arduino/pluggable-discovery-protocol-handler/v2"
@@ -96,25 +98,60 @@ func (d *DFUDiscovery) libusbSync(eventCB discovery.EventCallback, errorCB disco
 		return errors.New(C.GoString(err))
 	}
 
-	closeChan := make(chan struct{})
+	ctx, cancel := context.WithCancel(context.Background())
+	eventChan := d.runUpdateSender(ctx, eventCB, errorCB)
+
 	go func() {
-		d.sendUpdates(eventCB, errorCB)
 		for {
 			if C.libusbHandleEvents() != 0 {
-				d.sendUpdates(eventCB, errorCB)
+				select {
+				case eventChan <- true:
+				default:
+				}
 			}
 			select {
-			case <-closeChan:
+			case <-ctx.Done():
 				C.libusbHotplugDeregisterCallback()
 				return
 			default:
 			}
 		}
 	}()
-	d.close = func() {
-		close(closeChan)
-	}
+	d.close = cancel
 	return nil
+}
+
+func (d *DFUDiscovery) runUpdateSender(ctx context.Context, eventCB discovery.EventCallback, errorCB discovery.ErrorCallback) chan<- bool {
+	deviceEventChan := make(chan bool)
+	go func() {
+		d.sendUpdates(eventCB, errorCB)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-deviceEventChan:
+			}
+
+		again:
+			d.sendUpdates(eventCB, errorCB)
+
+			// Trigger another update after 500ms because the PLUG-IN signal may come
+			// way earlier before the port becomes actually READY.
+			// We experienced problems like:
+			// - the port not yet visibile
+			// - the port not accessible (because permissions haven't been set yet)
+			select {
+			case <-ctx.Done():
+				return
+			case <-deviceEventChan:
+				goto again
+			case <-time.After(time.Millisecond * 500):
+			}
+			d.sendUpdates(eventCB, errorCB)
+		}
+	}()
+	return deviceEventChan
 }
 
 func (d *DFUDiscovery) sendUpdates(eventCB discovery.EventCallback, errorCB discovery.ErrorCallback) {
