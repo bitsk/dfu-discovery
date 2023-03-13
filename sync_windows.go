@@ -19,7 +19,6 @@ package main
 
 import (
 	"context"
-	"time"
 
 	"github.com/arduino/go-win32-utils/devicenotification"
 	discovery "github.com/arduino/pluggable-discovery-protocol-handler/v2"
@@ -27,9 +26,7 @@ import (
 
 func (d *DFUDiscovery) sync(eventCB discovery.EventCallback, errorCB discovery.ErrorCallback) error {
 	ctx, cancel := context.WithCancel(context.Background())
-	d.close = cancel
-
-	deviceEventChan := make(chan bool, 1)
+	deviceEventChan := d.runUpdateSender(ctx, eventCB, errorCB)
 	go func() {
 		err := devicenotification.Start(ctx, func() {
 			select {
@@ -42,30 +39,6 @@ func (d *DFUDiscovery) sync(eventCB discovery.EventCallback, errorCB discovery.E
 		}
 	}()
 
-	go func() {
-		d.sendUpdates(eventCB, errorCB)
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-deviceEventChan:
-			}
-
-		again:
-			d.sendUpdates(eventCB, errorCB)
-
-			// Trigger another update after 500ms because Windows might signal a
-			// new port much before it becomes actually available.
-			select {
-			case <-ctx.Done():
-				return
-			case <-deviceEventChan:
-				goto again
-			case <-time.After(time.Millisecond * 500):
-			}
-			d.sendUpdates(eventCB, errorCB)
-		}
-	}()
+	d.close = cancel
 	return nil
 }
