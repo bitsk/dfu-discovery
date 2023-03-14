@@ -5,3 +5,4 @@ dfu-discovery
 *.o
 dfu-util_*.c
 dist/
+libusb.h

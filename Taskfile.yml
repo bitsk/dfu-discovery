@@ -27,6 +27,16 @@ vars:
     -X {{.CONFIGURATION_PACKAGE}}.Timestamp={{.TIMESTAMP}}
     '
   DFU_UTIL_VERSION: dfu-util-0.11
+  LIBUSB_VERSION: libusb-1.0.26
+  # Path of the project's primary Go module:
+  DEFAULT_GO_MODULE_PATH: ./
+  DEFAULT_GO_PACKAGES:
+    sh: |
+      echo $(
+        cd {{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}} &&
+        go list ./... | tr '\n' ' ' ||
+        echo '"ERROR: Unable to discover Go packages"'
+      )
 
 tasks:
   download-dfu-util:
@@ -46,6 +56,19 @@ tasks:
             # for some reason quirks.c has the exec flag set
             chmod -x dfu-util_quirks.c
         fi
+  
+  download-libusb:
+    desc: download libusb and copy the files in the correct dir
+    cmds:
+      - |
+        if [ -d "{{.LIBUSB_VERSION}}" ];
+          then
+            echo "{{.LIBUSB_VERSION}} already downloaded (directory exists)."
+          else
+            echo "Downloading {{.LIBUSB_VERSION}}..."
+            curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 -s | tar xj
+            cp {{.LIBUSB_VERSION}}/libusb/libusb.h .
+          fi
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-dependencies-task/Taskfile.yml
   general:prepare-deps:
@@ -78,3 +101,39 @@ tasks:
       - task: general:cache-dep-licenses
     cmds:
       - licensed status
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-task/Taskfile.yml
+  go:fix:
+    desc: Modernize usages of outdated APIs
+    dir: "{{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}}"
+    cmds:
+      - go fix {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-task/Taskfile.yml
+  go:format:
+    desc: Format Go code
+    dir: "{{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}}"
+    cmds:
+      - go fmt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-task/Taskfile.yml
+  go:lint:
+    desc: Lint Go code
+    dir: "{{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}}"
+    cmds:
+      - |
+        if ! which golint &>/dev/null; then
+          echo "golint not installed or not in PATH. Please install: https://github.com/golang/lint#installation"
+          exit 1
+        fi
+      - |
+        golint \
+          {{default "-min_confidence 0.8 -set_exit_status" .GO_LINT_FLAGS}} \
+          {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-task/Taskfile.yml
+  go:vet:
+    desc: Check for errors in Go code
+    dir: "{{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}}"
+    cmds:
+      - go vet {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
