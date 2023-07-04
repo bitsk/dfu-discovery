@@ -39,6 +39,39 @@ vars:
       )
 
 tasks:
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-workflows-task/Taskfile.yml
+  ci:validate:
+    desc: Validate GitHub Actions workflows against their JSON schema
+    vars:
+      # Source: https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/github-workflow.json
+      WORKFLOW_SCHEMA_URL: https://json.schemastore.org/github-workflow
+      WORKFLOW_SCHEMA_PATH:
+        sh: task utility:mktemp-file TEMPLATE="workflow-schema-XXXXXXXXXX.json"
+      WORKFLOWS_DATA_PATH: "./.github/workflows/*.{yml,yaml}"
+    deps:
+      - task: npm:install-deps
+    cmds:
+      - |
+        wget \
+          --quiet \
+          --output-document="{{.WORKFLOW_SCHEMA_PATH}}" \
+          {{.WORKFLOW_SCHEMA_URL}}
+      - |
+        npx \
+          --package=ajv-cli \
+          --package=ajv-formats \
+          ajv validate \
+            --all-errors \
+            --strict=false \
+            -c ajv-formats \
+            -s "{{.WORKFLOW_SCHEMA_PATH}}" \
+            -d "{{.WORKFLOWS_DATA_PATH}}"
+
+  docs:generate:
+    desc: Create all generated documentation content
+    # This is an "umbrella" task used to call any documentation generation processes the project has.
+    # It can be left empty if there are none.
+
   download-dfu-util:
     desc: download dfu-util and copy the files in the correct dir
     cmds:
@@ -56,7 +89,7 @@ tasks:
             # for some reason quirks.c has the exec flag set
             chmod -x dfu-util_quirks.c
         fi
-  
+
   download-libusb:
     desc: download libusb and copy the files in the correct dir
     cmds:
@@ -138,33 +171,80 @@ tasks:
     cmds:
       - go vet {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
-  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-workflows-task/Taskfile.yml
-  ci:validate:
-    desc: Validate GitHub Actions workflows against their JSON schema
-    vars:
-      # Source: https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/github-workflow.json
-      WORKFLOW_SCHEMA_URL: https://json.schemastore.org/github-workflow
-      WORKFLOW_SCHEMA_PATH:
-        sh: task utility:mktemp-file TEMPLATE="workflow-schema-XXXXXXXXXX.json"
-      WORKFLOWS_DATA_PATH: "./.github/workflows/*.{yml,yaml}"
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-markdown-task/Taskfile.yml
+  markdown:check-links:
+    desc: Check for broken links
     deps:
+      - task: docs:generate
       - task: npm:install-deps
     cmds:
       - |
-        wget \
-          --quiet \
-          --output-document="{{.WORKFLOW_SCHEMA_PATH}}" \
-          {{.WORKFLOW_SCHEMA_URL}}
-      - |
-        npx \
-          --package=ajv-cli \
-          --package=ajv-formats \
-          ajv validate \
-            --all-errors \
-            --strict=false \
-            -c ajv-formats \
-            -s "{{.WORKFLOW_SCHEMA_PATH}}" \
-            -d "{{.WORKFLOWS_DATA_PATH}}"
+        if [[ "{{.OS}}" == "Windows_NT" ]]; then
+          # npx --call uses the native shell, which makes it too difficult to use npx for this application on Windows,
+          # so the Windows user is required to have markdown-link-check installed and in PATH.
+          if ! which markdown-link-check &>/dev/null; then
+            echo "markdown-link-check not found or not in PATH."
+            echo "Please install: https://github.com/tcort/markdown-link-check#readme"
+            exit 1
+          fi
+          # Default behavior of the task on Windows is to exit the task when the first broken link causes a non-zero
+          # exit status, but it's better to check all links before exiting.
+          set +o errexit
+          STATUS=0
+          # Using -regex instead of -name to avoid Task's behavior of globbing even when quoted on Windows
+          # The odd method for escaping . in the regex is required for windows compatibility because mvdan.cc/sh gives
+          # \ characters special treatment on Windows in an attempt to support them as path separators.
+          for file in $(
+            find . \
+              -type d -name '.git' -prune -o \
+              -type d -name '.licenses' -prune -o \
+              -type d -name '__pycache__' -prune -o \
+              -type d -name 'node_modules' -prune -o \
+              -regex ".*[.]md" -print
+          ); do
+            markdown-link-check \
+              --quiet \
+              --config "./.markdown-link-check.json" \
+              "$file"
+            STATUS=$(( $STATUS + $? ))
+          done
+          exit $STATUS
+        else
+          npx --package=markdown-link-check --call='
+            STATUS=0
+            for file in $(
+              find . \
+                -type d -name '.git' -prune -o \
+                -type d -name '.licenses' -prune -o \
+                -type d -name '__pycache__' -prune -o \
+                -type d -name 'node_modules' -prune -o \
+                -regex ".*[.]md" -print
+            ); do
+              markdown-link-check \
+                --quiet \
+                --config "./.markdown-link-check.json" \
+                "$file"
+              STATUS=$(( $STATUS + $? ))
+            done
+            exit $STATUS
+          '
+        fi
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-markdown-task/Taskfile.yml
+  markdown:fix:
+    desc: Automatically correct linting violations in Markdown files where possible
+    deps:
+      - task: npm:install-deps
+    cmds:
+      - npx markdownlint-cli --fix "**/*.md"
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-markdown-task/Taskfile.yml
+  markdown:lint:
+    desc: Check for problems in Markdown files
+    deps:
+      - task: npm:install-deps
+    cmds:
+      - npx markdownlint-cli "**/*.md"
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/npm-task/Taskfile.yml
   npm:install-deps:

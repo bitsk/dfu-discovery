@@ -1,11 +1,13 @@
 # Arduino pluggable discovery for dfu devices
+
 [![Sync Labels status](https://github.com/arduino/dfu-discovery/actions/workflows/sync-labels.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/sync-labels.yml)
 [![Check Go Dependencies status](https://github.com/arduino/dfu-discovery/actions/workflows/check-go-dependencies-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-go-dependencies-task.yml)
 [![Check License status](https://github.com/arduino/dfu-discovery/actions/workflows/check-license.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-license.yml)
 [![Check Go status](https://github.com/arduino/dfu-discovery/actions/workflows/check-go-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-go-task.yml)
-[![Publish Tester Build status](https://github.com/arduino/dfu-discover/actions/workflows/publish-go-tester-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/publish-go-tester-task.yml)
+[![Publish Tester Build status](https://github.com/arduino/dfu-discovery/actions/workflows/publish-go-tester-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/publish-go-tester-task.yml)
 [![Check Taskfiles status](https://github.com/arduino/dfu-discovery/actions/workflows/check-taskfiles.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-taskfiles.yml)
 [![Check Workflows status](https://github.com/arduino/dfu-discovery/actions/workflows/check-workflows-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-workflows-task.yml)
+[![Check Markdown status](https://github.com/arduino/dfu-discovery/actions/workflows/check-markdown-task.yml/badge.svg)](https://github.com/arduino/dfu-discovery/actions/workflows/check-markdown-task.yml)
 
 The `dfu-discovery` tool is a command line program that interacts via stdio. It accepts commands as plain ASCII strings terminated with LF `\n` and sends response as JSON.
 
@@ -15,6 +17,7 @@ The `dfu-discovery` tool is a command line program that interacts via stdio. It 
 
 Just run `task download-dfu-util` to download dfu-util source code and then `task dist:<platform-to-build>`
 The platform to build can be one of:
+
 - Windows_32bit
 - Windows_64bit
 - Linux_32bit
@@ -286,7 +289,7 @@ e-mail contact: security@arduino.cc
 
 ## License
 
-Copyright (c) 2018 ARDUINO SA (www.arduino.cc)
+Copyright (c) 2018 ARDUINO SA (https://www.arduino.cc)
 
 The software is released under the GNU General Public License, which covers the main body
 of the dfu-discovery code. The terms of this license can be found at:
