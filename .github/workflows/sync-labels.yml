@@ -24,10 +24,12 @@ env:
 jobs:
   check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download JSON schema for labels configuration file
         id: download-schema
@@ -55,6 +57,7 @@ jobs:
   download:
     needs: check
     runs-on: ubuntu-latest
+    permissions: {}
 
     strategy:
       matrix:
@@ -82,6 +85,9 @@ jobs:
   sync:
     needs: download
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
 
     steps:
       - name: Set environment variables
@@ -106,7 +112,7 @@ jobs:
           echo "flag=--dry-run" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download configuration files artifact
         uses: actions/download-artifact@v3
