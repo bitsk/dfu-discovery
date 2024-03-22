@@ -1,0 +1,10 @@
+# Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/go/.golangci.yml
+# See: https://golangci-lint.run/usage/configuration/
+issues:
+  exclude-use-default: false
+  exclude:
+   - "libusb.h: No such file or directory"
+   - "dfu.h: No such file or directory"
+linters:
+  enable:
+    - revive
