@@ -34,6 +34,7 @@ jobs:
           - Linux_ARM64
           - macOS_64bit
           - macOS_ARM64
+          - Linux_RISCV64
 
     steps:
       - name: Checkout repository
