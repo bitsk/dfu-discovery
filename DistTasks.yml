@@ -245,6 +245,38 @@ tasks:
       CONTAINER_TAG: "{{.GO_VERSION}}-arm"
       PACKAGE_PLATFORM: "Linux_ARM64"
       PACKAGE_NAME: "{{.PROJECT_NAME}}_{{.VERSION}}_{{.PACKAGE_PLATFORM}}.tar.gz"
+      
+  Linux_RISCV64:
+    desc: Builds Linux RISCV64 binaries
+    dir: "{{.DIST_DIR}}"
+    cmds:
+      - |
+        mkdir {{.PLATFORM_DIR}}
+        cp ../LICENSE.txt {{.PLATFORM_DIR}}/
+        docker run -v `pwd`/..:/home/build -w /home/build \
+        -e CGO_ENABLED=1 \
+        {{.CONTAINER}}:{{.CONTAINER_TAG}} \
+        --build-cmd "{{.BUILD_COMMAND}}" \
+        -p "{{.BUILD_PLATFORM}}"
+
+        tar cz {{.PLATFORM_DIR}} -f {{.PACKAGE_NAME}}
+
+    vars:
+      PLATFORM_DIR: "{{.PROJECT_NAME}}_linux_riscv_64"
+      HOST: "riscv64-linux-gnu"
+      BUILD_COMMAND: >
+        curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj &&
+        cd libusb-1.0.26/ &&
+        ./configure --with-pic --disable-udev --enable-static --disable-shared --host={{.HOST}} &&
+        make -j"$(nproc)" &&
+        make install &&
+        make distclean &&
+        cd .. &&
+        go build -o {{.DIST_DIR}}/{{.PLATFORM_DIR}}/{{.PROJECT_NAME}} {{.LDFLAGS}}
+      BUILD_PLATFORM: "linux/riscv64"
+      CONTAINER_TAG: "{{.GO_VERSION}}-riscv"
+      PACKAGE_PLATFORM: "Linux_RISCV64"
+      PACKAGE_NAME: "{{.PROJECT_NAME}}_{{.VERSION}}_{{.PACKAGE_PLATFORM}}.tar.gz"
 
   macOS_64bit:
     desc: Builds Mac OS X 64 bit binaries
